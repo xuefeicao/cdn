@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.integrate import simps
 import math
+
 def cross_validation(config,configpara,results):
     """
     select the tuning parameters with validation 
@@ -45,32 +46,37 @@ def cross_validation(config,configpara,results):
     t_U_1 = configpara.t_U_all
     n1 = math.floor(t_i[0]/configpara.dt)+1
     row_n = configpara.row_n
-    def ode_x(A,B,C,D1,gamma):
+
+    def ode_x(A, B, C, D1, x_pre):
         h = fold*configpara.dt
         x_l = np.zeros((n_area,l_t_all))
-        x_l[:,0] = np.dot(gamma,Q2_1)[:,0]
+        x_l[:,0] = x_pre[:,0]
         for i in range(1,l_t_all):
-            tmp =0
-            for j in range(J):
-                tmp = tmp+Q4_1[j,i-1]*np.dot(B[:,:,j],x_l[:,i-1])
-            k1 = np.dot(A,x_l[:,i-1]) + tmp + np.dot(C,Q4_1[:,i-1])+D1.reshape((-1,))
+            base = x_l[:,i-1]
+            if (i-1)%int(1/fold) == 0:
+                base = x_pre[:,i-1]
             tmp = 0
             for j in range(J):
-                tmp = tmp + t_U_1[j,i-1]*np.dot(B[:,:,j],(x_l[:,i-1]+h/2*k1))
-            k2 = np.dot(A,(x_l[:,i-1]+h/2*k1))+ tmp+ np.dot(C,t_U_1[:,i-1])+D1.reshape((-1,))
+                tmp = tmp+Q4_1[j,i-1]*np.dot(B[:,:,j],base)
+            k1 =np.dot(A,base) + tmp + np.dot(C,Q4_1[:,i-1])+D1.reshape((-1,))
+    
             tmp = 0
             for j in range(J):
-                tmp = tmp+t_U_1[j,i-1]*np.dot(B[:,:,j],(x_l[:,i-1]+h/2*k2))
-            k3 = np.dot(A,(x_l[:,i-1]+h/2*k2))+ tmp+ np.dot(C,t_U_1[:,i-1])+D1.reshape((-1,))
+                tmp = tmp + t_U_1[j,i-1]*np.dot(B[:,:,j],(base+h/2*k1))
+            k2 = np.dot(A,(base+h/2*k1))+ tmp+ np.dot(C,t_U_1[:,i-1])+D1.reshape((-1,))
             tmp = 0
             for j in range(J):
-                tmp = tmp + Q4_1[j,i]*np.dot(B[:,:,j],(x_l[:,i-1]+h*k3))
-            k4 = np.dot(A,(x_l[:,i-1]+h*k3))+ tmp+ np.dot(C,Q4_1[:,i])+D1.reshape((-1,))
-            x_l[:,i] =x_l[:,i-1] + 1.0*h/6*(k1+2*k2+2*k3+k4)
+                tmp = tmp + t_U_1[j,i-1]*np.dot(B[:,:,j],(base+h/2*k2))
+            k3 = np.dot(A,(base+h/2*k2))+ tmp+ np.dot(C,t_U_1[:,i-1])+D1.reshape((-1,))
+            tmp = 0
+            for j in range(J):
+                tmp = tmp + Q4_1[j,i]*np.dot(B[:,:,j],(base+h*k3))
+            k4 = np.dot(A,(base+h*k3))+ tmp + np.dot(C,Q4_1[:,i])+D1.reshape((-1,))
+            x_l[:,i] = base+1.0*h/6*(k1+2*k2+2*k3+k4)
         return x_l
 
-    def error_1(A,B,C,D,gamma):
-        x_l = ode_x(A,B,C,D,gamma)
+    def error_1(A, B, C, D, x_pre):
+        x_l = ode_x(A,B,C,D,x_pre)
         z = np.zeros((n_area,l_t_0))
         for j in range(l_t_0):
             tmp = np.zeros((n_area,l_t_1))
@@ -87,42 +93,22 @@ def cross_validation(config,configpara,results):
         e1 = np.sum((y-z)**2)
         return e1,x_l[:,::int(1/fold)]
 
-    def error_2(gamma, A, B, C, D):
-        e2 = 0
-        tmp_0 = 0
-        for j in range(J):
-            tmp_0 = tmp_0 + np.dot(np.dot(B[:,:,j],gamma),Q3[:,:,j])
-        tmp = np.dot(gamma,Q1)-np.dot(np.dot(A,gamma),Q2)-tmp_0-np.dot(C,Q4)-np.repeat(D,l_t,axis=1) 
-        for m in range(n_area):
-            e2 = e2+simps(tmp[m,:]**2,t_i)
-        return e2
-
-    def penalty(gamma,A,B,C,D):
-        plt = 0
-        for k in range(n_area):
-            w_1k = np.dot(np.dot(gamma[k,:],P5),gamma[k,:])**0.5
-            plt = plt + np.sum(abs(A[:,k]))*w_1k
-            for j in range(J):
-                w_2kj = np.dot(np.dot(gamma[k,:],P10[:,:,j,j]),gamma[k,:])**0.5
-                plt = plt + np.sum(abs(B[:,k,j]))*w_2kj
-        for k in range(J):
-            w_3k = (P14[k,k])**0.5
-            plt = plt + np.sum(abs(C[:,k]))*w_3k
-        
-        return plt
     E1=list()
     X=list()
-
     for i in range(len(results)):
-        A = results[i][2]
-        B = results[i][3]
-        C = results[i][4]
-        D = results[i][5]
-        gamma = results[i][1]
-        e1, x = error_1(A,B,C,D,gamma)
+        A=results[i][2]
+        B=results[i][3]
+        C=results[i][4]
+        D=results[i][5]
+        x_pre=np.dot(results[i][1],Q2_1)
+        e1,x=error_1(A,B,C,D,x_pre)
 
-        E1.append(e1)
         X.append(x)
         
-    ind = np.argsort(E1)[0]
-    return ind,X[r_ind]
+        E1.append(e1)
+ 
+        
+    ind=np.argsort(E1)[0]
+    r_ind=ind
+    return r_ind,X[r_ind]
+

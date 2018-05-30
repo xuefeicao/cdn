@@ -23,6 +23,13 @@ def CDN_fmri(folder_name, data_file, stimuli_folder, dt, lam, mu=[0], lam_1=[0],
                                        / results: save all results with pictures 
     data_file: string, file name of BOLD signal
     stimuli_folder: string, folder name of stimuli
+    dt: TR of fMRI data
+    lam, mu, lam_1: tuning parameters
+    tol, max_iter: parameter for algorithm convergence
+    N: num of basis - 1, 
+    fold: scalar (integral evaluation stepsize = fold*dt)
+    data_dir: precomputed data if any 
+    x_real, A_real, B_real, C_real: the real parameters which are used to verify simulations 
     """
 
     pickle_file_config = folder_name + '/results/'
@@ -84,6 +91,7 @@ def CDN_multi_sub(folder_name, data_file, stimuli_folder, dt, lam, mu=[0], lam_1
     share_stimuli: bool variable, if the subjects have the same stimuli, set this as True
     share_tuning: bool variable, if you want only want to do tuning parameter selection for one subject and other subjects
                   use this selected parameter, set this as True. 
+    Other parameters: see CDN_fMRI
     """
     n1, n2, n3 = len(folder_name), len(data_file), len(stimuli_folder)
     if set([n1,n2,n3]) != 1:

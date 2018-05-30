@@ -3,13 +3,26 @@ import multiprocessing as mp
 import time
 from scipy.integrate import simps
 from functools import partial
-from validation_truncation_1 import cross_validation
+from validation_truncation import cross_validation
 from model_config import Modelconfig, Modelpara
 import os
 from six.moves import cPickle as pickle
 import random
 import glob
 def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100, multi=True):
+	"""
+	main algorithm, updating parameter for a defined problem
+
+	Parameters
+	-----------
+	file_name_dir: dir of problem folder
+	data_dir: dir of precomputed data
+	pickele_file: file name which we use to save estimations
+	lamu: list = [lam, lam*mu, lam_1], in our paper, mu is set to be zero. mu is the coefficient 
+	      for l2 norm penalty of A, B, C
+	tol, max_iter:
+	multi: bool variable, Default True
+	"""
     configpara=Modelpara(data_dir+'precomp.pkl')
     config=Modelconfig(file_name_dir+'data/observed.pkl')
     P1 = configpara.P1 
@@ -432,6 +445,18 @@ def str_2(num):
     return float(num)
     
 def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, data_dir, num_cores=1):
+	"""
+	wrapper for selecting the tuning parameters of one subject
+	See function update_p for details of variables meaning
+
+	Parameters
+	-----------
+	num_cores : int, allow multi-processing, default None
+
+	Returns
+	-----------
+	instance of Modelconfig, including all summaries of estimation for one subject
+	"""
     para=list()
    
     for i in range(len(lam)):
