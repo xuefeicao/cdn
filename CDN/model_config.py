@@ -1,51 +1,54 @@
-import rpy2.robjects as robjects
 import numpy as np
 import math
+from six.moves import cPickle as pkl 
 class Modelpara(object):
+    """
+    creat precomputed data
+    """
     def __init__(self,pre_result):
 
-        robjects.r.load(pre_result)
-        self.P1=np.array(robjects.r['x'][0])
-        self.P2=np.array(robjects.r['x'][1])
-        self.P3=np.array(robjects.r['x'][2])
-        self.P4=np.array(robjects.r['x'][3])
-        self.P5=np.array(robjects.r['x'][4])
-        self.P6=np.array(robjects.r['x'][5])
-        self.P7=np.array(robjects.r['x'][6])
-        self.P8=np.array(robjects.r['x'][7])
-        self.P9=np.array(robjects.r['x'][8])
-        self.P10=np.array(robjects.r['x'][9])
-        self.P11=np.array(robjects.r['x'][10])
-        self.P12=np.array(robjects.r['x'][11])
-        self.P13=np.array(robjects.r['x'][12])
-        self.P14=np.array(robjects.r['x'][13])
-        self.P15=np.array(robjects.r['x'][14])
-        self.Q1=np.array(robjects.r['x'][15])
-        self.Q2=np.array(robjects.r['x'][16])
-        self.Q3=np.array(robjects.r['x'][17])
-        self.Q4=np.array(robjects.r['x'][18])
+        save = pkl.load(open(pre_result))
+        self.P1 = save['P1']
+        self.P2 = save['P2']
+        self.P3 = save['P3']
+        self.P4 = save['P4']
+        self.P5 = save['P5']
+        self.P6 = save['P6']
+        self.P7 = save['P7']
+        self.P8 = save['P8']
+        self.P9 = save['P9']
+        self.P10 = save['P10']
+        self.P11 = save['P11']
+        self.P12 = save['P12']
+        self.P13 = save['P13']
+        self.P14 = save['P14']
+        self.P15 = save['P15']
+        self.Q1 = save['Q1']
+        self.Q2 = save['Q2']
+        self.Q3 = save['Q3']
+        self.Q4 = save['Q4']
     
-        self.Omega=np.array(robjects.r['x'][19])
-        self.t_1=np.array(robjects.r['x'][20])
-        self.hrf=np.array(robjects.r['x'][21])
-        self.t_U=np.array(robjects.r['x'][22])
-        self.t=np.array(robjects.r['x'][23])
+        self.Omega = save['Omega']
+        self.t_1 = save['t_1']
+        self.hrf = save['hrf']
+        self.t_U = save['t_U']
+        self.t = save['t']
 
-        self.Q1_all=np.array(robjects.r['x'][24])
-        self.Q2_all=np.array(robjects.r['x'][25])
-        self.Q3_all=np.array(robjects.r['x'][26])
-        self.Q4_all=np.array(robjects.r['x'][27])
-        self.t_all=np.array(robjects.r['x'][28])
-        self.t_U_all=np.array(robjects.r['x'][29])
+        self.Q1_all = save['Q1_all']
+        self.Q2_all = save['Q2_all']
+        self.Q3_all = save['Q3_all']
+        self.Q4_all = save['Q4_all']
+        self.t_all = save['t_all']
+        self.t_U_all = save['t_U_all']
 
-        self.row_n=int(np.array(robjects.r['x'][30])[0])
-        self.J=int(np.array(robjects.r['x'][31])[0])
-        self.N=int(np.array(robjects.r['x'][32])[0])
-        self.p=int(np.array(robjects.r['x'][33])[0])
-        self.dt=np.array(robjects.r['x'][34])[0]
-        self.fold=np.array(robjects.r['x'][35])[0]
+        self.row_n = int(save['row_n'])
+        self.J = int(save['J'])
+        self.N = int(save['N'])
+        self.p = int(save['p'])
+        self.dt = save['dt']
+        self.fold = save['fold']
 
-        self.l_t_1=self.t_1.shape[0]
+        self.l_t_1 = self.t_1.shape[0]
       
         
         #r_n=math.floor(2*self.dt*(self.row_n-1)/(self.N*self.dt*self.fold))
@@ -61,15 +64,25 @@ class Modelpara(object):
 
 
 class Modelconfig(object):
-    def __init__(self,pre_result,sim_index):
-        robjects.r.load(pre_result)
-        self.y=np.array(robjects.r['x'][0])
-
-        self.n_area=self.y.shape[0]
-        self.multi=False
-        self.sim_index=sim_index
-        self.A_u=True
-        self.B_u=True
-        self.C_u=True
-        self.D_u=False
+    """
+    creat model configuration
+    """
+    def __init__(self, pre_result, A_u=True, B_u=True, C_u=True):
+        """
+        Parameters
+        ------------
+        pre_result: name of observed data
+        A_u, B_u, C_u: bool variable which indicates whether you want to update A, B, C 
+        """
+        with open(pre_result) as f:
+            save = pkl.load(f)
+        self.y = save['y']
+        self.A = save['A_real']
+        self.B = save['B_real']
+        self.C = save['C_real']
+        self.n_area = self.y.shape[0]
+        self.A_u = A_u
+        self.B_u = B_u
+        self.C_u = C_u 
+        self.D_u = False
         
