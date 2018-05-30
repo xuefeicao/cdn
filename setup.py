@@ -14,4 +14,5 @@ setup(
         "matplotlib==1.5.3",
         "numpy==1.11.1",
     ],
-    url='https://github.com/xuefeicao/CDN'
+    url='https://github.com/xuefeicao/CDN',
+    )
