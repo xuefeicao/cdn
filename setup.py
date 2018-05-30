@@ -13,6 +13,7 @@ setup(
     install_requires=[
         "matplotlib==1.5.3",
         "numpy==1.11.1",
+        "scipy"
     ],
     url='https://github.com/xuefeicao/CDN',
     )
