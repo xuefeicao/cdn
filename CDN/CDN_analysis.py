@@ -12,7 +12,7 @@ import matplotlib.pyplot
 matplotlib.pyplot.switch_backend('agg')
 import matplotlib.pyplot as plt
 
-def CDN_fmri(folder_name, data_file, stimuli_folder, dt, lam, mu=[0], lam_1=[0], tol=1e-2, max_iter=100, N=50, fold=0.5, data_dir=None, x_real=None, y_real=None, A_real=None, B_real=None, C_real=None):
+def CDN_fmri(folder_name, data_file, stimuli_folder, dt, lam, mu=[0], lam_1=[0], tol=1e-2, max_iter=100, N=50, fold=0.5, data_dir=None, x_real=None, A_real=None, B_real=None, C_real=None):
     """
     folder_name: string, used to save all data and analysis results
                  after running this function, you will get a structure like the following: 
@@ -47,7 +47,7 @@ def CDN_fmri(folder_name, data_file, stimuli_folder, dt, lam, mu=[0], lam_1=[0],
     else:
         precomp = True
 
-    data_prepare(data_file, stimuli_folder, pickle_file_data, dt, N, fold, precomp, x_real, y_real, A_real, B_real, C_real)
+    data_prepare(data_file, stimuli_folder, pickle_file_data, dt, N, fold, precomp, x_real, A_real, B_real, C_real)
     if not data_dir:
         data_dir = pickle_file_data
     config = select_lamu(lam, mu, lam_1, folder_name, pickle_file_para, data_dir)
@@ -57,6 +57,7 @@ def CDN_fmri(folder_name, data_file, stimuli_folder, dt, lam, mu=[0], lam_1=[0],
     print t.shape
     n1 = save['n1'] 
     row_n = config.y.shape[1]
+    # cut off begining and end
     t = t[(n1+1):(row_n-n1)]
     estimated_x = save['estimated_x']
     estimated_y = save['estimated_y']
@@ -72,9 +73,9 @@ def CDN_fmri(folder_name, data_file, stimuli_folder, dt, lam, mu=[0], lam_1=[0],
 
 
         axarr[1].plot(t, estimated_y[i,(n1+1):(row_n-n1)], color='xkcd:purple', label='estimated', linewidth=2)
-        if y_real:
-            axarr[1].plot(t, y[i,(n1+1):(row_n-n1)], color='xkcd:blue', label='real', linewidth=2)
+        axarr[1].plot(t, y[i,(n1+1):(row_n-n1)], color='xkcd:blue', label='real', linewidth=2)
         axarr[1].set_xlabel('Time (Sec)')
+        plt.subplots_adjust(hspace=0.25)
         f.savefig(folder_name + 'results/estimated_' + str(i)+ '.svg')
         plt.close()
 

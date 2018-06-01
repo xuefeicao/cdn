@@ -41,9 +41,9 @@ def basis(x, h, i):
     for j in range(n):
         tmp = x[j]
         if tmp > (i - 1)*h and tmp < i*h:
-            ans[j] = -(tmp-(i-1)*h)/h
+            ans[j] = (tmp-(i-1)*h)/h
         elif tmp >= i*h and tmp < (i+1)*h:
-            ans[j] = -((i+1)*h - tmp)/h
+            ans[j] = ((i+1)*h - tmp)/h
         else:
             ans[j] = 0 
     return np.array(ans) 
@@ -102,7 +102,6 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
     fold: scalar (integral evaluation stepsize = fold*dt)
     precomp: bool (Whether to do precomputation for this subject). This variable is only useful when we do multi-subjects computation. 
     x_real: file name of neuronal signal
-    y_real: file name of real fMRI BOLD signal
     A_real, B_real, C_real: numpy matrices (real parameters) 
     sim_data: file name of simulated data which is provided for verification of algorithm. If this is provided, other related parameters will be overrided except N.
     
@@ -120,7 +119,6 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
 
             fold = save['fold']
             x_real = save['x_real']
-            y_real = save['y_real']
             A_real = save['A_real']
             B_real = save['B_real']
             C_real = save['C_real']
@@ -153,9 +151,10 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
     # cut off begining and end time sequences
 
     r_n = math.floor(2*dt_1/(dt*fold))
-    l_t = int((dt*(row_n-1)-2*r_n*dt*fold)/(dt*fold))
+    l_t = int((dt*(row_n-1)-2*r_n*dt*fold)/(dt*fold))+1
     hrf_l = int(30/(dt*fold))
     t = np.array([r_n*dt*fold + i*dt*fold for i in range(l_t)])
+    print t[552]
     t_1 = np.array([dt*fold*i for i in range(hrf_l)])
     hrf = canonicalHRF(t_1)
 
@@ -163,7 +162,8 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
 
     Phi = np.zeros((p,l_t))
     for i in range(p):
-        Phi[i,:] = basis(t, h, i=i)
+        Phi[i,:] = basis(t, dt_1, i=i)
+    print Phi[10,]
 
     Phi_d = np.zeros((p,l_t))
     for i in range(p):
@@ -197,12 +197,12 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
     P12 = np.zeros((l_t_0,p))
     for j in range(l_t_0):
         for i in range(p):
-            P12[j, i] = simps(hrf*basis(j*dt-t_1, h, i=i), t_1) 
+            P12[j, i] = simps(hrf*basis(j*dt-t_1, dt_1, i=i), t_1) 
 
     P12_1 = np.zeros((l_t+2, p))
     for j in range(l_t+1):
         for i in range(p):
-            P12_1[j,i] = simps(hrf*basis((j-1)*dt*fold-t_1, h, i=i), t_1)
+            P12_1[j,i] = simps(hrf*basis((j-1)*dt*fold-t_1, dt_1, i=i), t_1)
 
     P12_2 = np.zeros((l_t, p))
     for j in range(l_t):
@@ -286,12 +286,12 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
 
     # without truncation 
     t_tmp = t
-    t = np.arange(0, dt*(row_n-1)+dt*fold, dt*fold)
+    t = np.arange(0, dt*(row_n-1)+dt*fold*0.5, dt*fold)
 
     l_t = len(t)
     Phi_1 = np.zeros((p,l_t))
     for i in range(p):
-        Phi_1[i,:] = basis(t, h, i=i)
+        Phi_1[i,:] = basis(t, dt_1, i=i)
 
     Phi_d_1 = np.zeros((p,l_t))
     for i in range(p):
