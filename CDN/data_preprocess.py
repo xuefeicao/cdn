@@ -85,7 +85,7 @@ def pro(file_name, t):
     return np.array(ans) 
 
 
-def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, x_real=None, A_real=None, B_real=None, C_real=None, sim_data=None):
+def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True):
     """
     preprocess the data for CDN analysis, the function is prepared for single subject processing 
 
@@ -101,9 +101,9 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
     N: number of basis - 1
     fold: scalar (integral evaluation stepsize = fold*dt)
     precomp: bool (Whether to do precomputation for this subject). This variable is only useful when we do multi-subjects computation. 
-    x_real: file name of neuronal signal
-    A_real, B_real, C_real: numpy matrices (real parameters) 
-    sim_data: file name of simulated data which is provided for verification of algorithm. If this is provided, other related parameters will be overrided except N.
+    #x_real: file name of neuronal signal
+    #A_real, B_real, C_real: numpy matrices (real parameters) 
+    #sim_data: file name of simulated data which is provided for verification of algorithm. If this is provided, other related parameters will be overrided except N.
     
 
     Returns
@@ -111,29 +111,29 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
     None, preprocessed data will be saved into a file
 
     """
-    if sim_data:
-        with open(sim_data) as f:
-            save = pkl.load(f)['simulation']
-            y = save['y']
-            u_name = save['u']
+    # if sim_data:
+    #     with open(sim_data) as f:
+    #         save = pkl.load(f)['simulation']
+    #         y = save['y']
+    #         u_name = save['u']
 
-            fold = save['fold']
-            x_real = save['x_real']
-            A_real = save['A_real']
-            B_real = save['B_real']
-            C_real = save['C_real']
-    else:
+    #         fold = save['fold']
+    #         x_real = save['x_real']
+    #         A_real = save['A_real']
+    #         B_real = save['B_real']
+    #         C_real = save['C_real']
+    
         # n_area * row_n
-        y = np.loadtxt(y_name)
-        n_area, row_n = y.shape
+    y = np.loadtxt(y_name)
+    n_area, row_n = y.shape
     with open(folder_name+'observed.pkl', 'wb') as f:
         save = {}
         save['y'] = y
         save['n_area'] = n_area
-        save['A_real'] = A_real
-        save['B_real'] = B_real
-        save['C_real'] = C_real
-        save['x_real'] = x_real
+        # save['A_real'] = A_real
+        # save['B_real'] = B_real
+        # save['C_real'] = C_real
+        # save['x_real'] = x_real
         pkl.dump(save, f, pkl.HIGHEST_PROTOCOL)
     if u_name[-1] != '/':
         u_name = u_name[:(len(u_name)-1)] + '/'
@@ -154,7 +154,6 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
     l_t = int((dt*(row_n-1)-2*r_n*dt*fold)/(dt*fold))+1
     hrf_l = int(30/(dt*fold))
     t = np.array([r_n*dt*fold + i*dt*fold for i in range(l_t)])
-    print t[552]
     t_1 = np.array([dt*fold*i for i in range(hrf_l)])
     hrf = canonicalHRF(t_1)
 
@@ -163,7 +162,6 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
     Phi = np.zeros((p,l_t))
     for i in range(p):
         Phi[i,:] = basis(t, dt_1, i=i)
-    print Phi[10,]
 
     Phi_d = np.zeros((p,l_t))
     for i in range(p):
@@ -310,7 +308,6 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
                 U_Phi_1[i,k,j] = U_1[j,k]*Phi_1[i,k]
 
     t_U_1 = np.zeros((J, l_t-1))
-    print l_t, t
     for i in range(1, l_t):
         tmp_U = np.zeros((J,1))
         for l in range(J):

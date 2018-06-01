@@ -2,7 +2,7 @@ import numpy as np
 from scipy.integrate import simps
 import math
 
-def cross_validation(config, configpara, results):
+def cross_validation(y, configpara, results):
     """
     select the tuning parameters with validation with only one subjects. 
     """
@@ -28,9 +28,8 @@ def cross_validation(config, configpara, results):
     Q1_1 = configpara.Q1_all
     Q2_1 = configpara.Q2_all
     Q3_1 = configpara.Q3_all
-    Q4_1 = configpara.Q4_all
-    y = config.y 
-    n_area = config.n_area
+    Q4_1 = configpara.Q4_all 
+    n_area = y.shape[0]
     p = configpara.p
     t_i_all = configpara.t_i_all
     l_t_all = configpara.l_t_all
@@ -109,6 +108,7 @@ def cross_validation(config, configpara, results):
  
         
     ind=np.argsort(E1)[0]
+    print 'selected para:', results[ind][0]
     r_ind=ind
     return r_ind,X[r_ind]
 

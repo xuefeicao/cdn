@@ -6,7 +6,7 @@ from functools import partial
 from validation_truncation_1 import cross_validation
 from model_config import Modelconfig, Modelpara
 import os
-from six.moves import cPickle as pickle
+from six.moves import cPickle as pkl
 import random
 import glob
 def error_ws_0(y, gamma_ini, lam_1, P12, Omega):
@@ -31,22 +31,22 @@ def error_ws(y, gamma_ini, lam_1, P12, Omega):
         if n_gr**0.5<0.001:
             break
     return gamma_ini
-def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100, multi=True):
+def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lamu):
     """
     main algorithm, updating parameter for a defined problem
 
     Parameters
     -----------
     file_name_dir: dir of problem folder
-    data_dir: dir of precomputed data
+    precomp_dir: dir of precomputed data
     pickele_file: file name which we use to save estimations
-    lamu: list = [lam, lam*mu, lam_1], in our paper, mu is set to be zero. mu is the coefficient 
+    lamu: list = [lam, mu, lam_1], in our paper, mu is set to be zero. lam*mu is the coefficient 
           for l2 norm penalty of A, B, C
     tol, max_iter:
     multi: bool variable, Default True
     """
-    print data_dir
-    configpara = Modelpara(data_dir+'precomp.pkl')
+    #print precomp_dir
+    configpara = Modelpara(precomp_dir+'precomp.pkl')
     config = Modelconfig(file_name_dir+'data/observed.pkl')
     P1 = configpara.P1 
     P2 = configpara.P2
@@ -78,6 +78,7 @@ def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100,
     dt = configpara.dt
     row_n = configpara.row_n
     fold=configpara.fold
+    print y.shape
     ###################################################################################
     def gr(gamma, A, B, C, D, lam, mu, lam_1):
         g = np.zeros((n_area,p))
@@ -407,28 +408,28 @@ def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100,
         config.plt = plt 
         config.plt_1 = plt_1
         config.t_i = configpara.t_i
-        pickle_file_1 = file_name_dir + 'results/result.pickle'
+        pickle_file_1 = file_name_dir + 'results/result.pkl'
         f = open(pickle_file_1, 'wb')
         save = {
         'estimated_x': np.dot(config.gamma,configpara.Q2_all),
         'y': config.y, 
         'estimated_y': np.dot(config.gamma,np.transpose(P12)), 
-        'x_real': config.x_real, 
+        #'x_real': config.x_real, 
         'gamma': config.gamma,
         'A': config.A,
         'B': config.B,
         'C': config.C,
         'D':config.D,
-        'A_real': config.A_real,
-        'B_real': config.B_real,
-        'C_real': config.C_real,
+        #'A_real': config.A_real,
+        #'B_real': config.B_real,
+        #'C_real': config.C_real,
         #'D_real': config.D_real,
         'lamu': config.lamu, 
         'e1': config.e1, 'e2': config.e2, 'plt_1': config.plt_1, 'plt': config.plt,
         't': np.arange(0,configpara.dt*(configpara.row_n-1)+configpara.dt**0.5,configpara.dt),
         'n1': (int(configpara.t_i[0]/configpara.dt)+1) #valid estimation bound
         }
-        pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)
+        pkl.dump(save, f, pkl.HIGHEST_PROTOCOL)
         f.close()
         return
     else:
@@ -437,7 +438,7 @@ def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100,
         save = {
         'result': [lamu,gamma,A,B,C,D,e1,e2,plt,plt_1]
         }
-        pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)
+        pkl.dump(save, f, pkl.HIGHEST_PROTOCOL)
         f.close()
         return 
 def str_2(num):
@@ -446,7 +447,7 @@ def str_2(num):
     else:
         return float(num)
     
-def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, data_dir, num_cores=1):
+def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, precomp_dir, val_data_dir=None, val_precomp_dir=None, num_cores=1, tol=1e-2, max_iter=100):
     """
     wrapper for selecting the tuning parameters of one subject
     See function update_p for details of variables meaning
@@ -468,23 +469,33 @@ def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, data_dir, num_cores=
     if len(para) >= 1:
         if num_cores > 1:
             pool = mp.Pool(processes=min(len(para), num_cores))
-            update_p_1 = partial(update_p, file_name_dir, data_dir, pickle_file)
+            update_p_1 = partial(update_p, file_name_dir, precomp_dir, pickle_file, tol, max_iter, True)
             pool.map(update_p_1,para)
             pool.close()
             pool.join()
         else:
             for i in range(len(para)):
-                update_p(file_name_dir, data_dir, pickle_file, para[i])
+                update_p(file_name_dir, precomp_dir, pickle_file, tol, max_iter, True, para[i])
     results = list()
     file_config = glob.glob(pickle_file+'*.pickle')
     for i in range(len(file_config)):
         f = open(file_config[i], 'rb')
-        save = pickle.load(f)
+        save = pkl.load(f)
         results.append(save['result'])
-    configpara = Modelpara(data_dir + 'precomp.pkl')
+    pickle_file_1 = file_name_dir + 'results/result.pkl'
     config = Modelconfig(file_name_dir+'data/observed.pkl')
+
+    
+    if not val_data_dir or not val_precomp_dir:
+        val_data_dir = precomp_dir
+        val_precomp_dir = precomp_dir
+
+
+    configpara = Modelpara(val_precomp_dir + 'precomp.pkl')
+    with open(val_data_dir + 'observed.pkl') as f:
+        y = pkl.load(f)['y']
     if len(results) > 1:
-        ind, _ = cross_validation(config, configpara, results)
+        ind, _ = cross_validation(y, configpara, results)
     else:
         ind = 0
 
@@ -502,28 +513,28 @@ def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, data_dir, num_cores=
     config.plt_1 = results[ind][9]
     Q2 = configpara.Q2_all 
     fold = configpara.fold 
-    pickle_file_1 = file_name_dir + 'results/result.pkl'
+    
     f = open(pickle_file_1, 'wb')
     save = {
     'estimated_x': np.dot(config.gamma, Q2[:,0:(Q2.shape[1]+1):int(1/fold)]),
     'y': config.y, 
     'estimated_y': np.dot(config.gamma,np.transpose(configpara.P12)), 
-    'x_real': config.x_real, 
+    #'x_real': config.x_real, 
     'gamma': config.gamma,
     'A': config.A,
     'B': config.B,
     'C': config.C,
     'D':config.D,
-    'A_real': config.A_real,
-    'B_real': config.B_real,
-    'C_real': config.C_real,
+    #'A_real': config.A_real,
+    #'B_real': config.B_real,
+    #'C_real': config.C_real,
     #'D_real': config.D_real,
     'lamu': config.lamu, 
     'e1': config.e1, 'e2': config.e2, 'plt_1': config.plt_1, 'plt': config.plt,
     't': np.arange(0,configpara.dt*(configpara.row_n-1)+configpara.dt*0.5,configpara.dt),
     'n1': (int(configpara.t_i[0]/configpara.dt)+1) #valid estimation bound
     }
-    pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)
+    pkl.dump(save, f, pkl.HIGHEST_PROTOCOL)
     f.close()
 
     return config
