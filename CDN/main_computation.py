@@ -3,28 +3,51 @@ import multiprocessing as mp
 import time
 from scipy.integrate import simps
 from functools import partial
-from validation_truncation import cross_validation
+from validation_truncation_1 import cross_validation
 from model_config import Modelconfig, Modelpara
 import os
 from six.moves import cPickle as pickle
 import random
 import glob
-def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100, multi=True):
-	"""
-	main algorithm, updating parameter for a defined problem
+def error_ws_0(y, gamma_ini, lam_1, P12, Omega):
+    n_area = y.shape[0]
+    e1 = np.sum((y-np.dot(gamma_ini,np.transpose(P12)))**2)
+    plt_1 = 0
+    for i in range(n_area):
+        plt_1 = plt_1 + np.dot(np.dot(gamma_ini[i,:],Omega),gamma_ini[i,:])
+    return e1+lam_1*plt_1
 
-	Parameters
-	-----------
-	file_name_dir: dir of problem folder
-	data_dir: dir of precomputed data
-	pickele_file: file name which we use to save estimations
-	lamu: list = [lam, lam*mu, lam_1], in our paper, mu is set to be zero. mu is the coefficient 
-	      for l2 norm penalty of A, B, C
-	tol, max_iter:
-	multi: bool variable, Default True
-	"""
-    configpara=Modelpara(data_dir+'precomp.pkl')
-    config=Modelconfig(file_name_dir+'data/observed.pkl')
+def error_ws(y, gamma_ini, lam_1, P12, Omega):
+    stp=1
+    while(stp<1000):
+        gr=np.dot((np.dot(gamma_ini,np.transpose(P12))-y),P12)*2+2*lam_1*np.dot(gamma_ini,np.transpose(Omega))
+        n_gr=(np.sum(gr**2))
+        f_t=1
+        fixed=error_ws_0(y, gamma_ini, lam_1, P12, Omega)
+        while(error_ws_0(y, gamma_ini-f_t*gr, lam_1, P12, Omega)>fixed-0.5*f_t*n_gr):
+            f_t=0.8*f_t
+        gamma_ini=gamma_ini-gr*f_t
+        stp=stp+1
+        if n_gr**0.5<0.001:
+            break
+    return gamma_ini
+def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100, multi=True):
+    """
+    main algorithm, updating parameter for a defined problem
+
+    Parameters
+    -----------
+    file_name_dir: dir of problem folder
+    data_dir: dir of precomputed data
+    pickele_file: file name which we use to save estimations
+    lamu: list = [lam, lam*mu, lam_1], in our paper, mu is set to be zero. mu is the coefficient 
+          for l2 norm penalty of A, B, C
+    tol, max_iter:
+    multi: bool variable, Default True
+    """
+    print data_dir
+    configpara = Modelpara(data_dir+'precomp.pkl')
+    config = Modelconfig(file_name_dir+'data/observed.pkl')
     P1 = configpara.P1 
     P2 = configpara.P2
     P3 = configpara.P3
@@ -214,7 +237,7 @@ def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100,
         X_tmp[-1,-1] = t_T 
         s_eig = np.sort(abs(np.linalg.eig(X_tmp)[0]))
         #print np.linalg.cond(X_tmp+mu*I_tmp), s_eig[-1] ,s_eig[0]
-        if config.D_u==False:
+        if config.D_u == False:
             Y_tmp = Y_tmp[:,0:-1]
             X_tmp = X_tmp[0:-1,0:-1]
             I_tmp = I_tmp[0:-1,0:-1]
@@ -296,29 +319,8 @@ def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100,
 
     #######################################################################################
     ##############################################################################################
-    def error_ws_0(gamma_ini, lam_1):
-        e1 = np.sum((y-np.dot(gamma_ini,np.transpose(P12)))**2)
-        plt_1 = 0
-        for i in range(n_area):
-            plt_1 = plt_1 + np.dot(np.dot(gamma_ini[i,:],Omega),gamma_ini[i,:])
-        return e1+lam_1*plt_1
-    
-    def error_ws(gamma_ini, lam_1):
-        stp=1
-        while(stp<1000):
-            gr=np.dot((np.dot(gamma_ini,np.transpose(P12))-y),P12)*2+2*lam_1*np.dot(gamma_ini,np.transpose(Omega))
-            n_gr=(np.sum(gr**2))
-            f_t=1
-            fixed=error_ws_0(gamma_ini,lam_1)
-            while(error_ws_0(gamma_ini-f_t*gr,lam_1)>fixed-0.5*f_t*n_gr):
-                f_t=0.8*f_t
-            gamma_ini=gamma_ini-gr*f_t
-            stp=stp+1
-            if n_gr**0.5<0.001:
-                break
-        return gamma_ini
 
-    def ini_select(lam_1):
+    def ini_select(y, lam_1, P12=P12, Omega=Omega):
         """
         selecting an initial for gamma which may help to avoid local minimum
 
@@ -327,7 +329,7 @@ def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100,
         lam_1: scalar, penalty for the second derivative of neuronal activities x. 
         """
         gamma_0 = np.zeros((n_area,p))
-        gamma_0 = error_ws(gamma_0,lam_1)
+        gamma_0 = error_ws(y, gamma_0, lam_1, P12, Omega)
         return gamma_0 
 
     def str_1(num):
@@ -350,13 +352,13 @@ def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100,
     C = np.zeros((n_area,J))
     D = np.zeros((n_area,1))
     iter = 0
-    sum_e=10**6
-    gamma = ini_select(lam_1) 
-    sum_e_1=likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)[1]
+    sum_e = 10**6
+    gamma = ini_select(y, lam_1) 
+    sum_e_1 = likelihood(gamma, A, B, C, D, lam, mu, lam_1, p_t=True)[1]
 
     while(iter<max_iter and abs(sum_e-sum_e_1)/sum_e_1>tol):
-        gamma_1=gamma+np.ones((n_area,p))
-        stp=1
+        gamma_1 = gamma + np.ones((n_area,p))
+        stp = 1
         while(stp<10 and iter>1):
             results = gr(gamma,A,B,C,D,lam,mu,lam_1)
             n_results = (np.sum(results**2))
@@ -368,7 +370,7 @@ def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100,
             gamma = gamma-results*f_t
             stp = stp+1
 
-        if config.B_u==True:
+        if config.B_u == True:
             tmp = update_all_3(gamma,mu=0)
             A = tmp[:,0:n_area]
             for j in range(J):
@@ -387,10 +389,10 @@ def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100,
             A = tmp[:,0:n_area]
             if config.D_u == True:
                 D = tmp[:,-1].reshape((-1,1))
-        sum_e=sum_e_1
-        sum_e_1=likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)[1]
-        iter=iter+1
-    e1,e2,plt,plt_1=likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)
+        sum_e = sum_e_1
+        sum_e_1 = likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)[1]
+        iter += 1
+    e1,e2,plt,plt_1 = likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)
     #print config.sim_index,lamu,config.sim_index,iter, 'dif_sum='+str(abs(sum_e-sum_e_1)), e1, e2, plt, plt_1 
 
     if multi == False:
@@ -409,7 +411,7 @@ def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100,
         f = open(pickle_file_1, 'wb')
         save = {
         'estimated_x': np.dot(config.gamma,configpara.Q2_all),
-        'y': config.y
+        'y': config.y, 
         'estimated_y': np.dot(config.gamma,np.transpose(P12)), 
         'x_real': config.x_real, 
         'gamma': config.gamma,
@@ -420,7 +422,7 @@ def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100,
         'A_real': config.A_real,
         'B_real': config.B_real,
         'C_real': config.C_real,
-        'D_real': config.D_real,
+        #'D_real': config.D_real,
         'lamu': config.lamu, 
         'e1': config.e1, 'e2': config.e2, 'plt_1': config.plt_1, 'plt': config.plt,
         't': np.arange(0,configpara.dt*(configpara.row_n-1)+configpara.dt**0.5,configpara.dt),
@@ -439,25 +441,25 @@ def update_p(file_name_dir, data_dir, pickle_file, lamu, tol=1e-2, max_iter=100,
         f.close()
         return 
 def str_2(num):
-    if num[0]=='0':
-    return float(num)/(10**(len(num)-1))
+    if num[0] == '0':
+        return float(num)/(10**(len(num)-1))
     else:
-    return float(num)
+        return float(num)
     
 def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, data_dir, num_cores=1):
-	"""
-	wrapper for selecting the tuning parameters of one subject
-	See function update_p for details of variables meaning
+    """
+    wrapper for selecting the tuning parameters of one subject
+    See function update_p for details of variables meaning
 
-	Parameters
-	-----------
-	num_cores : int, allow multi-processing, default None
+    Parameters
+    -----------
+    num_cores : int, allow multi-processing, default None
 
-	Returns
-	-----------
-	instance of Modelconfig, including all summaries of estimation for one subject
-	"""
-    para=list()
+    Returns
+    -----------
+    instance of Modelconfig, including all summaries of estimation for one subject
+    """
+    para = list()
    
     for i in range(len(lam)):
         for j in range(len(mu)):
@@ -466,44 +468,46 @@ def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, data_dir, num_cores=
     if len(para) >= 1:
         if num_cores > 1:
             pool = mp.Pool(processes=min(len(para), num_cores))
-            update_p_1=partial(update_p, file_name_dir, pickle_file, data_dir)
+            update_p_1 = partial(update_p, file_name_dir, data_dir, pickle_file)
             pool.map(update_p_1,para)
             pool.close()
             pool.join()
         else:
             for i in range(len(para)):
-                update(file_name_dir, para[i], pickle_file, data_dir)
+                update_p(file_name_dir, data_dir, pickle_file, para[i])
     results = list()
     file_config = glob.glob(pickle_file+'*.pickle')
     for i in range(len(file_config)):
         f = open(file_config[i], 'rb')
         save = pickle.load(f)
         results.append(save['result'])
-    config_para = Modelpara(data_dir+'precomp.pkl')
+    configpara = Modelpara(data_dir + 'precomp.pkl')
+    config = Modelconfig(file_name_dir+'data/observed.pkl')
     if len(results) > 1:
-        ind = cross_validation(config, config_para, results)
+        ind, _ = cross_validation(config, configpara, results)
     else:
         ind = 0
 
-    config = Modelconfig(file_name_dir+'data/observed.pkl')
-    config.t_i=config_para.t_i
-    config.lamu=results[ind][0]
-    config.A=results[ind][2]
-    config.B=results[ind][3]
-    config.C=results[ind][4]
-    config.D=results[ind][5]
-    config.gamma=results[ind][1]
-    config.e1=results[ind][6]
-    config.e2=results[ind][7]
-    config.plt=results[ind][8]
-    config.plt_1=results[ind][9]
-
-    pickle_file_1 = file_name_dir + 'results/result.pickle'
+    
+    config.t_i = configpara.t_i
+    config.lamu = results[ind][0]
+    config.A = results[ind][2]
+    config.B = results[ind][3]
+    config.C = results[ind][4]
+    config.D = results[ind][5]
+    config.gamma = results[ind][1]
+    config.e1 = results[ind][6]
+    config.e2 = results[ind][7]
+    config.plt = results[ind][8]
+    config.plt_1 = results[ind][9]
+    Q2 = configpara.Q2_all 
+    fold = configpara.fold 
+    pickle_file_1 = file_name_dir + 'results/result.pkl'
     f = open(pickle_file_1, 'wb')
     save = {
-    'estimated_x': np.dot(config.gamma,configpara.Q2_all),
-    'y': config.y
-    'estimated_y': np.dot(config.gamma,np.transpose(P12)), 
+    'estimated_x': np.dot(config.gamma, Q2[:,0:(Q2.shape[1]+1):int(1/fold)]),
+    'y': config.y, 
+    'estimated_y': np.dot(config.gamma,np.transpose(configpara.P12)), 
     'x_real': config.x_real, 
     'gamma': config.gamma,
     'A': config.A,
@@ -513,10 +517,10 @@ def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, data_dir, num_cores=
     'A_real': config.A_real,
     'B_real': config.B_real,
     'C_real': config.C_real,
-    'D_real': config.D_real,
-    'lamu': config.lamu 
+    #'D_real': config.D_real,
+    'lamu': config.lamu, 
     'e1': config.e1, 'e2': config.e2, 'plt_1': config.plt_1, 'plt': config.plt,
-    't': np.arange(0,configpara.dt*(configpara.row_n-1)+configpara.dt**0.5,configpara.dt),
+    't': np.arange(0,configpara.dt*(configpara.row_n-1)+configpara.dt*0.5,configpara.dt),
     'n1': (int(configpara.t_i[0]/configpara.dt)+1) #valid estimation bound
     }
     pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)

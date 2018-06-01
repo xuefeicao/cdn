@@ -8,6 +8,9 @@ class Modelpara(object):
     def __init__(self,pre_result):
 
         save = pkl.load(open(pre_result))
+        for k in save:
+            if hasattr(save[k], 'shape'):
+                print k, save[k].shape
         self.P1 = save['P1']
         self.P2 = save['P2']
         self.P3 = save['P3']
@@ -39,7 +42,7 @@ class Modelpara(object):
         self.Q3_all = save['Q3_all']
         self.Q4_all = save['Q4_all']
         self.t_all = save['t_all']
-        self.t_U_all = save['t_U_all']
+        self.t_U_all = save['t_U_1']
 
         self.row_n = int(save['row_n'])
         self.J = int(save['J'])
@@ -77,9 +80,10 @@ class Modelconfig(object):
         with open(pre_result) as f:
             save = pkl.load(f)
         self.y = save['y']
-        self.A = save['A_real']
-        self.B = save['B_real']
-        self.C = save['C_real']
+        self.A_real = save['A_real']
+        self.B_real = save['B_real']
+        self.C_real = save['C_real']
+        self.x_real = save['x_real']
         self.n_area = self.y.shape[0]
         self.A_u = A_u
         self.B_u = B_u

@@ -1,7 +1,8 @@
 import numpy as np
 import math 
 from six.moves import cPickle as pkl 
-from scipy.integrate import simps 
+from scipy.integrate import simps
+import os  
 
 def canonicalHRF(x):
     """
@@ -19,7 +20,7 @@ def canonicalHRF(x):
     a1, a2, b1, b2, c = 6, 12, 0.9, 0.9, 0.35 
     d1 = a1*b1
     d2 = a2*b2
-    return ((x/d1)**a1) * math.exp(-(x - d1)/b1) - c*((x/d2)**a2)*math.exp(-(x - d2)/b2)
+    return ((x/d1)**a1) * np.exp(-(x - d1)/b1) - c*((x/d2)**a2)*np.exp(-(x - d2)/b2)
 
 
 def pos(x):
@@ -59,14 +60,18 @@ def pro(file_name, t):
     ------------
     list of stimulus values at t
     """
+    if isinstance(t, float):
+        t = [t]
     tmp = np.loadtxt(file_name)
+    if len(tmp.shape) == 1:
+        tmp = tmp.reshape((1, tmp.shape[0]))
     a = tmp[:,0]
     b = tmp[:,0] + tmp[:,1] 
     n = a.shape[0]
     i = 0
     ans = [0]*len(t)
     for j, ts in enumerate(t):
-        if ts < a[0] or ts > b[n]:
+        if ts < a[0] or ts > b[n-1]:
             continue
         else:
             while i < n:
@@ -87,8 +92,10 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
     Parameters
     ------------
     y_name: file name of fMRI BOLD signal with string format
+            We require the column of the file is the space dimension while row is the time dimension
+    
     u_name: folder name of fMRI stimuli which includes only stimuli file indexed from *.ev0 to *.ev(J-1) where J is the number of stimuli
-            We require the colum of the file is the time dimension where row is the space dimension
+            first column is the starting time of events, second column is the duration    
     file_name: list of two strings (the file name we use to save our observed data and precomputed data)
     dt: TR of fMRI signal
     N: number of basis - 1
@@ -105,11 +112,12 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
     None, preprocessed data will be saved into a file
 
     """
-    if not sim_data:
+    if sim_data:
         with open(sim_data) as f:
             save = pkl.load(f)['simulation']
             y = save['y']
             u_name = save['u']
+
             fold = save['fold']
             x_real = save['x_real']
             y_real = save['y_real']
@@ -118,9 +126,9 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
             C_real = save['C_real']
     else:
         # n_area * row_n
-        y = np.loadtxt(y_name).T
+        y = np.loadtxt(y_name)
         n_area, row_n = y.shape
-    with open(folder_name+'observed.pkl'):
+    with open(folder_name+'observed.pkl', 'wb') as f:
         save = {}
         save['y'] = y
         save['n_area'] = n_area
@@ -128,11 +136,13 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
         save['B_real'] = B_real
         save['C_real'] = C_real
         save['x_real'] = x_real
-        pkl.dump(save, f, pickle.HIGHEST_PROTOCOL)
+        pkl.dump(save, f, pkl.HIGHEST_PROTOCOL)
+    if u_name[-1] != '/':
+        u_name = u_name[:(len(u_name)-1)] + '/'
     if not precomp:
         return 
 
-    J = u.shape[0]
+    J = len(os.listdir(u_name))
     h = dt*fold
     t_T = dt*(row_n-1)
     dt_1 = t_T/N
@@ -153,7 +163,7 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
 
     Phi = np.zeros((p,l_t))
     for i in range(p):
-        Phi[i,:] = basis(t, i=i)
+        Phi[i,:] = basis(t, h, i=i)
 
     Phi_d = np.zeros((p,l_t))
     for i in range(p):
@@ -185,14 +195,14 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
         P9[0,i] = simps(Phi[i,:], t)
 
     P12 = np.zeros((l_t_0,p))
-    for i in range(l_t_0):
-        for j in range(p):
-            P12[j,i] = simps(hrf*basis(j*dt-t_1,i=i), t_1) 
+    for j in range(l_t_0):
+        for i in range(p):
+            P12[j, i] = simps(hrf*basis(j*dt-t_1, h, i=i), t_1) 
 
     P12_1 = np.zeros((l_t+2, p))
     for j in range(l_t+1):
         for i in range(p):
-            P12_1[j,i] = simps(hrf*basis((j-1)*dt*fold-t_1,i=i), t_1)
+            P12_1[j,i] = simps(hrf*basis((j-1)*dt*fold-t_1, h, i=i), t_1)
 
     P12_2 = np.zeros((l_t, p))
     for j in range(l_t):
@@ -210,7 +220,7 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
     #####################stimuli related computation
     U = np.zeros((J, l_t))
     for i in range(J):
-        U[i,:] = pro(u_name + '/ev'+str(i)+'.txt', t)
+        U[i,:] = pro(u_name + 'ev'+str(i)+'.txt', t)
 
     U_Phi = np.zeros((p,l_t, J))
     for j in range(J):
@@ -271,16 +281,17 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
     for i in range(1, l_t):
         tmp_U = np.zeros((J,1))
         for l in range(J):
-            tmp_U[l,0] = pro(u_name + '/ev'+str(l)+'.txt', ((i-1)*h+h/2))
+            tmp_U[l,0] = pro(u_name + 'ev'+str(l)+'.txt', ((i-1)*h+h/2))
         t_U[:,i-1] = tmp_U
 
     # without truncation 
     t_tmp = t
-    t = t_0
+    t = np.arange(0, dt*(row_n-1)+dt*fold, dt*fold)
+
     l_t = len(t)
     Phi_1 = np.zeros((p,l_t))
     for i in range(p):
-        Phi_1[i,:] = basis(t, i=i)
+        Phi_1[i,:] = basis(t, h, i=i)
 
     Phi_d_1 = np.zeros((p,l_t))
     for i in range(p):
@@ -290,7 +301,7 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
 
     U_1 = np.zeros((J, l_t))
     for i in range(J):
-        U_1[i,:] = pro(u_name + '/ev'+str(i)+'.txt', t)
+        U_1[i,:] = pro(u_name + 'ev'+str(i)+'.txt', t)
 
     U_Phi_1 = np.zeros((p,l_t, J))
     for j in range(J):
@@ -299,13 +310,14 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
                 U_Phi_1[i,k,j] = U_1[j,k]*Phi_1[i,k]
 
     t_U_1 = np.zeros((J, l_t-1))
+    print l_t, t
     for i in range(1, l_t):
         tmp_U = np.zeros((J,1))
         for l in range(J):
-            tmp_U[l,0] = pro(u_name + '/ev'+str(l)+'.txt', ((i-1)*h+h/2))
+            tmp_U[l,0] = pro(u_name + 'ev'+str(l)+'.txt', ((i-1)*h+h/2))
         t_U_1[:,i-1] = tmp_U
 
-    with open(folder_name+'precomp.pkl'):
+    with open(folder_name+'precomp.pkl', 'wb') as f:
         save = {
         'P1':P1,'P2':P2,'P3':P3,'P4':P4,
         'P5':P5,'P6':P6,'P7':P7,'P8':P8,'P9':P9,'P10':P10,
@@ -313,10 +325,11 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
         'Q1':Phi_d,'Q2':Phi,'Q3':U_Phi,'Q4': U,
         'Omega': Omega,
         't_1': t_1,
+        't_U': t_U, 
         'hrf':hrf,
         't':t_tmp,
-        'Q1_all': Q1_all,
-        'Q2_all': Q2_all,
+        'Q1_all': Phi_d_1,
+        'Q2_all': Phi_1,
         'Q3_all': U_Phi_1,
         'Q4_all': U_1,
         't_all':t,
@@ -324,5 +337,5 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True, 
         'row_n':row_n,
         'J':J, 'N':N, 'p':p, 'dt':dt, 'fold':fold,
         }
-        pkl.dump(save, f, pickle.HIGHEST_PROTOCOL)
+        pkl.dump(save, f, pkl.HIGHEST_PROTOCOL)
 
