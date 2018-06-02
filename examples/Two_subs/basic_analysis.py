@@ -4,7 +4,8 @@ In our paper, we do 50 subjects. Here, to illustrate how to use our package, we 
 Data are included in the folder Data/
 """
 import sys
-sys.path.append('../../CDN/')
+#sys.path.append('../../CDN/')
+from CDN import *
 from CDN_analysis import CDN_multi_sub
 from evaluation_1 import eva 
 
