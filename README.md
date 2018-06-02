@@ -5,7 +5,7 @@ CDN is a python-based package implementing causal dynamic network analysis for F
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. THis package is going to be published in pypi in the future. 
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. This package is going to be published in pypi in the future. 
 
 ### Prerequisites
 
@@ -22,6 +22,14 @@ Download the packages by using git clone https://github.com/xuefeicao/CDN.git
 ```
 python setup.py install
 ```
+### Intro to our package
+After installing our package locally, try to import CDN in your python environment and learn about package's function. 
+```
+import CDN.CDN_analysis as CDN_analysis
+help(CDN_analysis.CDN_multi_sub)
+```
+
+
 ### Examples
 ```
 The examples subfolder includes a basic analysis of CDN analysis.
@@ -29,7 +37,7 @@ The examples subfolder includes a basic analysis of CDN analysis.
 
 ## Running the tests
 
-Test is going to be added in the future 
+Test is going to be added in the future. The package is only tested on python 2.7 enviroment right now. A more compatible version will be published soon.
 
 ## Built With
 
