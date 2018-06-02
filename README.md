@@ -46,7 +46,7 @@ Test is going to be added in the future. The package is only tested on python 2.
 ## Authors
 
 * **Xuefei Cao** - *Maintainer* - (https://github.com/xuefeicao)
-* **Xi Luo** (https://sites.google.com/site/xirossiluo/)
+* **Xi Luo** (http://bigcomplexdata.com/)
 * **Björn Sandstede** (http://www.dam.brown.edu/people/sandsted/)
 
 
