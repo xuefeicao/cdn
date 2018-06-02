@@ -12,13 +12,13 @@ setup(
     long_description=readme,
     install_requires=[
         #"matplotlib==2.2.2",
-        "matplotlib>=1.5.3",
-        "numpy>=1.11.1",
-        "scipy>=0.19.0",
-        "bootstrapped>=0.0.1",
-        "pandas>=0.18.1", 
-        "six>=1.10.0",
-        "scikit-learn>=0.18.1"
+        "matplotlib==1.5.3",
+        "numpy==1.11.1",
+        "scipy==0.19.0",
+        "bootstrapped==0.0.1",
+        "pandas==0.18.1", 
+        "six==1.10.0",
+        "scikit-learn==0.18.1"
     ],
     url='https://github.com/xuefeicao/CDN',
     include_package_data=True,
