@@ -5,9 +5,8 @@ Data are included in the folder Data/
 """
 import sys
 #sys.path.append('../../CDN/')
-from CDN import *
-from CDN_analysis import CDN_multi_sub
-from evaluation_1 import eva 
+from CDN.CDN_analysis import CDN_multi_sub
+from CDN.evaluation_1 import eva 
 
 folder_name = ['Analysis/1/', 'Analysis/2/']
 data_file = ['data/fMRI_1.txt', 'data/fMRI_2.txt']
