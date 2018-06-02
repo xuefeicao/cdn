@@ -1,6 +1,8 @@
+from __future__ import print_function
 import numpy as np
 from scipy.integrate import simps
 import math
+
 
 def cross_validation(y, configpara, results):
     """
@@ -108,7 +110,7 @@ def cross_validation(y, configpara, results):
  
         
     ind=np.argsort(E1)[0]
-    print 'selected para:', results[ind][0]
+    print('selected tuning para:', results[ind][0])
     r_ind=ind
     return r_ind,X[r_ind]
 

@@ -56,6 +56,7 @@ def CDN_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu=
         raise Exception('less than two simulations/subjects')
     precomp_dir = [0]*n1 
     val_data_dir = None 
+    val_precomp_dir = None 
     ind1, ind2 = val_pair
     
     

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import math
 from six.moves import cPickle as pkl 
@@ -7,10 +8,10 @@ class Modelpara(object):
     """
     def __init__(self,pre_result):
 
-        save = pkl.load(open(pre_result))
+        save = pkl.load(open(pre_result, 'rb'))
         # for k in save:
         #     if hasattr(save[k], 'shape'):
-        #         print k, save[k].shape
+        #         print(k, save[k].shape)
         self.P1 = save['P1']
         self.P2 = save['P2']
         self.P3 = save['P3']
@@ -77,7 +78,7 @@ class Modelconfig(object):
         pre_result: name of observed data
         A_u, B_u, C_u: bool variable which indicates whether you want to update A, B, C 
         """
-        with open(pre_result) as f:
+        with open(pre_result, 'rb') as f:
             save = pkl.load(f)
         self.y = save['y']
         #self.A_real = save['A_real']

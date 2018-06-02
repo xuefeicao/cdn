@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 import multiprocessing as mp
 import time
@@ -45,7 +46,6 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
     tol, max_iter:
     multi: bool variable, Default True
     """
-    #print precomp_dir
     configpara = Modelpara(precomp_dir+'precomp.pkl')
     config = Modelconfig(file_name_dir+'data/observed.pkl')
     P1 = configpara.P1 
@@ -78,7 +78,6 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
     dt = configpara.dt
     row_n = configpara.row_n
     fold=configpara.fold
-    print y.shape
     ###################################################################################
     def gr(gamma, A, B, C, D, lam, mu, lam_1):
         g = np.zeros((n_area,p))
@@ -237,7 +236,7 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
         X_tmp[(J+1)*n_area:((J+1)*n_area+J),-1] = np.transpose(P15).reshape((-1))
         X_tmp[-1,-1] = t_T 
         s_eig = np.sort(abs(np.linalg.eig(X_tmp)[0]))
-        #print np.linalg.cond(X_tmp+mu*I_tmp), s_eig[-1] ,s_eig[0]
+        #print(np.linalg.cond(X_tmp+mu*I_tmp), s_eig[-1] ,s_eig[0])
         if config.D_u == False:
             Y_tmp = Y_tmp[:,0:-1]
             X_tmp = X_tmp[0:-1,0:-1]
@@ -309,7 +308,7 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
         X_tmp[0:n_area,-1] = np.dot(gamma,np.transpose(P9)).reshape((-1))
         X_tmp[-1,-1] = t_T 
         s_eig = np.sort(abs(np.linalg.eig(X_tmp)[0]))
-        #print np.linalg.cond(X_tmp+mu*I_tmp), s_eig[-1] ,s_eig[0]
+        #print(np.linalg.cond(X_tmp+mu*I_tmp), s_eig[-1] ,s_eig[0])
         if config.D_u == False:
             Y_tmp = Y_tmp[:,0:-1]
             X_tmp = X_tmp[0:-1,0:-1]
@@ -394,7 +393,6 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
         sum_e_1 = likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)[1]
         iter += 1
     e1,e2,plt,plt_1 = likelihood(gamma,A,B,C,D,lam,mu,lam_1,p_t=True)
-    #print config.sim_index,lamu,config.sim_index,iter, 'dif_sum='+str(abs(sum_e-sum_e_1)), e1, e2, plt, plt_1 
 
     if multi == False:
         config.gamma = gamma
@@ -492,7 +490,7 @@ def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, precomp_dir, val_dat
 
 
     configpara = Modelpara(val_precomp_dir + 'precomp.pkl')
-    with open(val_data_dir + 'observed.pkl') as f:
+    with open(val_data_dir + 'observed.pkl', 'rb') as f:
         y = pkl.load(f)['y']
     if len(results) > 1:
         ind, _ = cross_validation(y, configpara, results)
