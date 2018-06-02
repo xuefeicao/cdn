@@ -11,7 +11,7 @@ setup(
     packages=['CDN'],
     long_description=readme,
     install_requires=[
-        "matplotlib==1.5.3",
+        "matplotlib==2.2.2",
         "numpy==1.11.1",
         "scipy==0.19.0",
         "bootstrapped==0.0.1",
