@@ -3,7 +3,7 @@ from setuptools import setup
 readme = open('README.md').read()
 
 setup(
-    name="CDN",
+    name="CDN-fMRI",
     version="0.0.0",
     description="Implementations of Causal Dynamic Network Analysis of fMRI",
     author="Xuefei Cao, Xi Luo, Bjorn Sandstede",

@@ -13,7 +13,7 @@ These instructions will get you a copy of the project up and running on your loc
 This package is also published in pypi.  For a quick installation, try
 
 ```
-pip install CDN 
+pip install CDN-fMRI
 ```
 
 ### Prerequisites
