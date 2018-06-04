@@ -4,7 +4,7 @@ readme = open('README.md').read()
 
 setup(
     name="CDN",
-    version="0.0.3",
+    version="0.0.0",
     description="Implementations of Causal Dynamic Network Analysis of fMRI",
     author="Xuefei Cao, Xi Luo, Bjorn Sandstede",
     author_email="xcstf01@gmail.com",
