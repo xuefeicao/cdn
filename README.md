@@ -1,11 +1,11 @@
 # Causal Dynamic Network Modeling
-CDN is a python-based package implementing causal dynamic network analysis for Functional magnetic resonance imaging (fMRI). It aims to improve the dynamic causal modelling with optimization based method. Our optimization-based  method and algorithm compute efficiently the ODE parameters from fMRI data, instead of comparing potentially a huge  number of candidate ODE models. For a detailed introduction of dynamic causal modeling, see [(1)].
+CDN is a Python-based package implementing causal dynamic network analysis for Functional magnetic resonance imaging (fMRI). It aims to improve the dynamic causal modeling with the optimization based method. Our optimization-based method and algorithm compute efficiently the ODE parameters from fMRI data, instead of comparing potentially a huge number of candidate ODE models. For a detailed introduction of dynamic causal modeling, see [(1)].
 
 
 
 ## Getting Started
 This package supports both python 2.7 and python 3.6.
-Examples provided in the repo has been tested in mac os and linux environment. 
+Example provided in the repo has been tested in mac os and Linux environment. 
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. This package is going to be published in pypi in the future. 
 
@@ -42,11 +42,11 @@ The examples subfolder includes a basic analysis of CDN analysis.
 
 ## Running the tests
 
-Test is going to be added in the future.
+The test is going to be added in the future.
 
 ## Built With
 
-* python 2.7
+* Python 2.7
 
 ## Compatibility
 * python 2.7
