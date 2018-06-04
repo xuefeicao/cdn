@@ -1,11 +1,12 @@
-from model_config import Modelconfig, Modelpara
-from main_computation import update_p, select_lamu 
-from data_preprocess import data_prepare
+from .model_config import Modelconfig, Modelpara
+from .main_computation import update_p, select_lamu 
+from .data_preprocess import data_prepare
 from functools import partial
 import numpy as np
 import multiprocessing as mp
 import os
 from sys import getsizeof
+import six 
 from six.moves import cPickle as pkl
 import glob
 import matplotlib.pyplot
@@ -102,7 +103,10 @@ def CDN_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu=
     if plot_r:
         for i in range(n1):
             with open(folder_name[i]+'results/result.pkl', 'rb') as f:
-                save = pkl.load(f)
+                if six.PY2:
+                    save = pkl.load(f)
+                else:
+                    save = pkl.load(f, encoding='latin1')
             t = save['t']
             n1 = save['n1'] 
             estimated_x = save['estimated_x']

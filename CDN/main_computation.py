@@ -4,12 +4,13 @@ import multiprocessing as mp
 import time
 from scipy.integrate import simps
 from functools import partial
-from validation_truncation_1 import cross_validation
-from model_config import Modelconfig, Modelpara
+from .validation_truncation_1 import cross_validation
+from .model_config import Modelconfig, Modelpara
 import os
 from six.moves import cPickle as pkl
 import random
 import glob
+import six 
 def error_ws_0(y, gamma_ini, lam_1, P12, Omega):
     n_area = y.shape[0]
     e1 = np.sum((y-np.dot(gamma_ini,np.transpose(P12)))**2)
@@ -235,7 +236,7 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
             X_tmp[n_area*(j+1):n_area*(j+2),-1] = np.dot(gamma,np.transpose(P11[j,:])).reshape((-1))
         X_tmp[(J+1)*n_area:((J+1)*n_area+J),-1] = np.transpose(P15).reshape((-1))
         X_tmp[-1,-1] = t_T 
-        s_eig = np.sort(abs(np.linalg.eig(X_tmp)[0]))
+        #s_eig = np.sort(abs(np.linalg.eig(X_tmp)[0]))
         #print(np.linalg.cond(X_tmp+mu*I_tmp), s_eig[-1] ,s_eig[0])
         if config.D_u == False:
             Y_tmp = Y_tmp[:,0:-1]
@@ -274,7 +275,7 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
         X_tmp[0:n_area,-1] = np.dot(gamma,np.transpose(P9)).reshape((-1))
         X_tmp[n_area:(n_area+J),-1] = np.transpose(P15).reshape((-1))
         X_tmp[-1,-1] = t_T 
-        s_eig = np.sort(abs(np.linalg.eig(X_tmp)[0]))
+        #s_eig = np.sort(abs(np.linalg.eig(X_tmp)[0]))
         if config.D_u == False:
             Y_tmp = Y_tmp[:,0:-1]
             X_tmp = X_tmp[0:-1,0:-1]
@@ -357,7 +358,7 @@ def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lam
     sum_e_1 = likelihood(gamma, A, B, C, D, lam, mu, lam_1, p_t=True)[1]
 
     while(iter<max_iter and abs(sum_e-sum_e_1)/sum_e_1>tol):
-        gamma_1 = gamma + np.ones((n_area,p))
+        #gamma_1 = gamma + np.ones((n_area,p))
         stp = 1
         while(stp<10 and iter>1):
             results = gr(gamma,A,B,C,D,lam,mu,lam_1)
@@ -478,7 +479,10 @@ def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, precomp_dir, val_dat
     file_config = glob.glob(pickle_file+'*.pickle')
     for i in range(len(file_config)):
         f = open(file_config[i], 'rb')
-        save = pkl.load(f)
+        if six.PY2:
+            save = pkl.load(f)
+        else:
+            save = pkl.load(f, encoding='latin1')
         results.append(save['result'])
     pickle_file_1 = file_name_dir + 'results/result.pkl'
     config = Modelconfig(file_name_dir+'data/observed.pkl')
@@ -491,7 +495,11 @@ def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, precomp_dir, val_dat
 
     configpara = Modelpara(val_precomp_dir + 'precomp.pkl')
     with open(val_data_dir + 'observed.pkl', 'rb') as f:
-        y = pkl.load(f)['y']
+        if six.PY2:
+            y = pkl.load(f)['y']
+        else:
+            y = pkl.load(f, encoding='latin1')['y']
+
     if len(results) > 1:
         ind, _ = cross_validation(y, configpara, results)
     else:

@@ -2,13 +2,17 @@ from __future__ import print_function
 import numpy as np
 import math
 from six.moves import cPickle as pkl 
+import six 
 class Modelpara(object):
     """
     creat precomputed data
     """
     def __init__(self,pre_result):
-
-        save = pkl.load(open(pre_result, 'rb'))
+        with open(pre_result, 'rb') as f:
+            if six.PY2:
+                save = pkl.load(f)
+            else:
+                save = pkl.load(f, encoding='latin1')
         # for k in save:
         #     if hasattr(save[k], 'shape'):
         #         print(k, save[k].shape)
@@ -79,7 +83,10 @@ class Modelconfig(object):
         A_u, B_u, C_u: bool variable which indicates whether you want to update A, B, C 
         """
         with open(pre_result, 'rb') as f:
-            save = pkl.load(f)
+            if six.PY2:
+                save = pkl.load(f)
+            else:
+                save = pkl.load(f, encoding='latin1')
         self.y = save['y']
         #self.A_real = save['A_real']
         #self.B_real = save['B_real']
