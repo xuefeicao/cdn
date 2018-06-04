@@ -61,4 +61,3 @@ Test is going to be added in the future.
 This project is licensed under the MIT License - see the LICENSE file for details
 
 [(1)]:http://www.fil.ion.ucl.ac.uk/~karl/Dynamic%20causal%20modelling.pdf
-[(2)]: 
