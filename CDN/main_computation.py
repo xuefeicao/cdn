@@ -4,8 +4,8 @@ import multiprocessing as mp
 import time
 from scipy.integrate import simps
 from functools import partial
-from .validation_truncation_1 import cross_validation
-from .model_config import Modelconfig, Modelpara
+from CDN.validation_truncation_1 import cross_validation
+from CDN.model_config import Modelconfig, Modelpara
 import os
 from six.moves import cPickle as pkl
 import random
@@ -468,6 +468,7 @@ def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, precomp_dir, val_dat
     if len(para) >= 1:
         if num_cores > 1:
             pool = mp.Pool(processes=min(len(para), num_cores))
+            print('begin multiprocessing with {0} cores'.format(num_cores))
             update_p_1 = partial(update_p, file_name_dir, precomp_dir, pickle_file, tol, max_iter, True)
             pool.map(update_p_1,para)
             pool.close()

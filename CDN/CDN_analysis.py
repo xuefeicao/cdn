@@ -1,6 +1,6 @@
-from .model_config import Modelconfig, Modelpara
-from .main_computation import update_p, select_lamu 
-from .data_preprocess import data_prepare
+from CDN.model_config import Modelconfig, Modelpara
+from CDN.main_computation import update_p, select_lamu 
+from CDN.data_preprocess import data_prepare
 from functools import partial
 import numpy as np
 import multiprocessing as mp
@@ -44,6 +44,7 @@ def CDN_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu=
     #share_tuning: bool variable, if you want only want to do tuning parameter selection for one subject and other subjects
                   use this selected parameter, set this as True. 
     tol, max_iter: parameter for algorithm convergence
+    num_cores: int, number of cores for parallel computing 
     B_u, C_u: whether to update B and C in the estimations, bool variables
     plot_r: indicates whether to plot estimated signals, bool variables
 

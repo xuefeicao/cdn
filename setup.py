@@ -4,12 +4,13 @@ readme = open('README.md').read()
 
 setup(
     name="CDN",
-    version="0.0.1",
+    version="0.0.3",
     description="Implementations of Causal Dynamic Network Analysis of fMRI",
     author="Xuefei Cao, Xi Luo, Bjorn Sandstede",
     author_email="xcstf01@gmail.com",
     packages=['CDN'],
     long_description=readme,
+    long_description_content_type='text/markdown',
     install_requires=[
         "matplotlib>=1.5.3",
         "numpy>=1.11.1",
