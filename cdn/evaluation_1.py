@@ -137,7 +137,7 @@ def eva(folder_name, saved_folder_name=None, real_parameters=None, num_iteration
 
     Parameters
     -----------
-    folder_name: folder names for all subjects analysis, the same as meaning as that in function CDN_multi_sub
+    folder_name: folder names for all subjects analysis, the same meaning as that in function cdn_multi_sub
     saved_folder_name: folder used to save bootstrapped estimations
     nums_iterations, alpha: bootstrap para
     """

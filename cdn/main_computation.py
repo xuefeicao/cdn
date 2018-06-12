@@ -4,8 +4,8 @@ import multiprocessing as mp
 import time
 from scipy.integrate import simps
 from functools import partial
-from CDN.validation_truncation_1 import cross_validation
-from CDN.model_config import Modelconfig, Modelpara
+from cdn.validation_truncation_1 import cross_validation
+from cdn.model_config import Modelconfig, Modelpara
 import os
 from six.moves import cPickle as pkl
 import random
