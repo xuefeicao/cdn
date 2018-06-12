@@ -36,7 +36,8 @@ python setup.py install
 If you experience problems related to installing the dependency Matplotlib on OSX, please see https://matplotlib.org/faq/osx_framework.html 
 
 ### Intro to our package
-After installing our package locally, try to import CDN in your python environment and learn about package's function. 
+After installing our package locally, try to import cdn in your python environment and learn about package's function. 
+Note: our package name in pypi is cdn-fmri.
 ```
 import cdn.cdn_analysis as cdn_analysis
 help(cdn_analysis.cdn_multi_sub)
