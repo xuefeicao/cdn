@@ -49,10 +49,6 @@ help(cdn_analysis.cdn_multi_sub)
 The examples subfolder includes a basic analysis of CDN analysis.
 ```
 
-## Running the tests
-
-The test is going to be added in the future.
-
 ## Built With
 
 * Python 2.7
