@@ -6,7 +6,7 @@ import math
 
 def cross_validation(y, configpara, results):
     """
-    select the tuning parameters with validation with only one subjects. 
+    select the tuning parameters with validation 
     """
     P1 = configpara.P1 
     P2 = configpara.P2
