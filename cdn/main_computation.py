@@ -35,7 +35,7 @@ def error_ws(y, gamma_ini, lam_1, P12, Omega):
     return gamma_ini
 def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lamu):
     """
-    main algorithm, updating parameter for a defined problem
+    The main algorithm, updating parameter for a defined problem
 
     Parameters
     -----------
@@ -457,7 +457,7 @@ def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, precomp_dir, val_dat
 
     Returns
     -----------
-    instance of Modelconfig, including all summaries of estimation for one subject
+    An instance of Modelconfig, including all summaries of estimation for one subject
     """
     para = list()
    
