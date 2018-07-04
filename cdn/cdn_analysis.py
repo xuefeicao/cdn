@@ -50,7 +50,7 @@ def cdn_multi_sub(folder_name, data_file, stimuli_folder, val_pair, dt, lam, mu=
 
     Returns
     ----------
-    None, results saved in folder
+    None, results saved in the folder
     """
     n1, n2, n3 = len(folder_name), len(data_file), len(stimuli_folder)
     if len(set([n1,n2,n3])) != 1:
