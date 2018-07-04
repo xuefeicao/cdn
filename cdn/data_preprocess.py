@@ -88,28 +88,25 @@ def pro(file_name, t):
 def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True):
     """
     preprocess the data for CDN analysis, the function is prepared for single subject processing 
-
     Parameters
     ------------
     y_name: file name of fMRI BOLD signal with string format
-            We require the column of the file is the space dimension while row is the time dimension
+            We require the column of the file is the space dimension while the row is the time dimension
     
     u_name: folder name of fMRI stimuli which includes only stimuli file indexed from *.ev0 to *.ev(J-1) where J is the number of stimuli
-            first column is the starting time of events, second column is the duration    
+            the first column is the starting time of events, the second column is the duration    
     file_name: list of two strings (the file name we use to save our observed data and precomputed data)
     dt: TR of fMRI signal
-    N: number of basis - 1
+    N: number of bases - 1
     fold: scalar (integral evaluation stepsize = fold*dt)
-    precomp: bool (Whether to do precomputation for this subject). This variable is only useful when we do multi-subjects computation. 
-    #x_real: file name of neuronal signal
+    precomp: bool (Whether to do precomputation for this subject). This variable is only useful when we do the multi-subjects computation. 
+    #x_real: file name of the neuronal signal
     #A_real, B_real, C_real: numpy matrices (real parameters) 
-    #sim_data: file name of simulated data which is provided for verification of algorithm. If this is provided, other related parameters will be overrided except N.
+    #sim_data: file name of simulated data which is provided for verification of algorithm. If this is provided, other related parameters will be overridden except N.
     
-
     Returns
     ------------
-    None, preprocessed data will be saved into a file
-
+    None 
     """
     # if sim_data:
     #     with open(sim_data) as f:
