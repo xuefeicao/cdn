@@ -464,7 +464,7 @@ def select_lamu(lam, mu, lam_1, file_name_dir, pickle_file, precomp_dir, val_dat
     for i in range(len(lam)):
         for j in range(len(mu)):
             for k in range(len(lam_1)):
-                para.append((lam[i], lam[i]*mu[j], lam_1[k]))
+                para.append((lam[i], mu[j], lam_1[k]))
     if len(para) >= 1:
         if num_cores > 1:
             pool = mp.Pool(processes=min(len(para), num_cores))

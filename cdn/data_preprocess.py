@@ -280,7 +280,7 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True):
         tmp_U = np.zeros((J,1))
         for l in range(J):
             tmp_U[l,0] = pro(u_name + 'ev'+str(l)+'.txt', ((i-1)*h+h/2))
-        t_U[:,i-1] = tmp_U
+        t_U[:,i-1] = tmp_U[:,0]
 
     # without truncation 
     t_tmp = t
@@ -312,7 +312,7 @@ def data_prepare(y_name, u_name, folder_name, dt, N=50, fold=0.5, precomp=True):
         tmp_U = np.zeros((J,1))
         for l in range(J):
             tmp_U[l,0] = pro(u_name + 'ev'+str(l)+'.txt', ((i-1)*h+h/2))
-        t_U_1[:,i-1] = tmp_U
+        t_U_1[:,i-1] = tmp_U[:,0]
 
     with open(folder_name+'precomp.pkl', 'wb') as f:
         save = {

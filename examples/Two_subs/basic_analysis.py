@@ -1,5 +1,5 @@
 """
-An example with two subjects fMRI signals with same stimuli, increase number of subjects will improve the results
+An example with two subjects fMRI signals with same stimuli, increasing number of subjects will improve the results
 In our paper, we do 50 subjects. Here, to illustrate how to use our package, we only include two subjects.
 Data are included in the folder data/
 """
