@@ -6,9 +6,9 @@ cdn-fmri is a Python-based package implementing causal dynamic network analysis 
 ## Getting Started
 This package supports both python 2.7 and python 3.6.
 
-Example provided in the repo has been tested in mac os and Linux environment. 
+The example provided in the repo has been tested in mac os and Linux environment. 
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
+These instructions will get you a copy of the project up running on your local machine for development and testing purposes. 
 
 This package is also published in pypi.  For a quick installation, try
 
