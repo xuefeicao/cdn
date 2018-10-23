@@ -33,8 +33,13 @@ def error_ws(y, gamma_ini, lam_1, P12, Omega):
         if n_gr**0.5<0.001:
             break
     return gamma_ini
+
+
 def update_p(file_name_dir, precomp_dir, pickle_file,  tol, max_iter, multi, lamu):
     """
+    users can provide constraints for the value range of elements in connectivity matrices, A and B. This
+    can be easily done by modifying "update" functions. For example, if the negative diagonal value is required,
+    we can add additional constraints on that. 
     The main algorithm, updating parameter for a defined problem
 
     Parameters
