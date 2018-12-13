@@ -7,7 +7,6 @@ setup(
     version="0.0.2",
     description="Implementations of Causal Dynamic Network Analysis of fMRI",
     author="Xuefei Cao, Xi Luo, Bjorn Sandstede",
-    author_email="xcstf01@gmail.com",
     packages=['cdn'],
     long_description=readme,
     long_description_content_type='text/markdown',
