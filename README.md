@@ -1,6 +1,7 @@
 # Causal Dynamic Network Modeling
 This is a preliminary version of our code. More features will be added soon!
-cdn-fmri is a Python-based package implementing causal dynamic network analysis for Functional magnetic resonance imaging (fMRI). It aims to improve the dynamic causal modeling with the optimization based method. Our optimization-based method and algorithm compute efficiently the ODE parameters from fMRI data, instead of comparing potentially a huge number of candidate ODE models. For a detailed introduction of dynamic causal modeling, see [(1)]. 
+cdn-fmri is a Python-based package implementing causal dynamic network analysis for Functional magnetic resonance imaging (fMRI). It aims to improve the dynamic causal modeling with the optimization based method. Our optimization-based method and algorithm compute efficiently the ODE parameters from fMRI data, instead of comparing potentially a huge number of candidate ODE models. For a detailed introduction of dynamic causal modeling, see [(1)]. For a sparse version of this package, 
+see [(2)]. This version may perform better in some cases. 
 
 ## Cite our paper
 @article{cao2019functional,
@@ -81,3 +82,4 @@ The examples subfolder includes a basic analysis of CDN analysis.
 This project is licensed under the MIT License - see the LICENSE file for details
 
 [(1)]:http://www.fil.ion.ucl.ac.uk/~karl/Dynamic%20causal%20modelling.pdf
+[(2)]:https://github.com/xuefeicao/scdn
